@@ -3,7 +3,7 @@
 // @author       Katstrel
 // @description  Adds chapter word count, chapter read time, and work read time to stats in the blurb.
 // @version      1.0
-// @namespace    https://github.com/Katstrel/kats-tweaks
+// @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
 // @grant        none
