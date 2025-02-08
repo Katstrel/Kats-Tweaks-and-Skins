@@ -3,13 +3,13 @@
 // @author       Katstrel
 // @description  Adds chapter word count, chapter read time, and work read time to stats in the blurb.
 // @version      1.0.1
-// @history	     1.0.1 - fixed userscript header
+// @history      1.0.1 - fixed userscript header
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
 // @grant        none
-// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/main/Scripts/Read_Time_and_Word_Count.js
-// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/main/Scripts/Read_Time_and_Word_Count.js
+// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Read_Time_and_Word_Count.user.js
+// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Read_Time_and_Word_Count.user.js
 // ==/UserScript==
 "use strict";
 let DEBUG = false;
