@@ -7,6 +7,8 @@
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
 // @grant        none
+// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/main/Scripts/Read_Time_and_Word_Count.js
+// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/main/Scripts/Read_Time_and_Word_Count.js
 // ==/UserScript==
 "use strict";
 let DEBUG = false;
@@ -26,7 +28,13 @@ let settings = {
 
 // তততততত STOP SETTINGS তততততত //
 
-// v1.0 
+/* Parts of code used or based on:
+AO3 Bookmarking Records by Bairdel
+AO3: Estimated Reading Time v2 by lomky
+AO3: Get Current Chapter Word Count by w4tchdoge
+*/
+
+// StyleManager v1.0 
 class StyleManager {
     // Creates a term and definition and appends after given dd query value
     static addDLItem(querySelect, term, definiton, styleClass) {
@@ -69,7 +77,6 @@ class ReadTime {
         }
     }
 
-    // Credit: Bairdel's AO3 Bookmarking Records
     getWordCount(blurb) {
         let words = blurb.querySelector('dd.words').innerText;
         if (words.includes(",")) {
@@ -87,7 +94,6 @@ class ReadTime {
         return wordsINT;
     }
 
-    // Credit: lomky's AO3: Estimated Reading Time v2
     calculateTime(querySelect, wordCount, type = '') {
         let minutes = wordCount/(settings.readTime.wordsPerMinute);
         let hrs = Math.floor(minutes/60);
