@@ -1,0 +1,29 @@
+/* Parent Skin: https://archiveofourown.org/skins/887 */
+#header,
+#footer ul.actions {
+  background: rgba(153,0,0,0.5);
+}
+
+#header .heading a {
+  color: rgba(255,255,255,0.9);
+}
+
+div.comment,
+li.comment {
+  background: rgba(238,238,238,0.5);
+}
+
+.thread .even {
+  background: rgba(255,255,255,0.5);
+}
+
+#dashboard.own,
+#dashboard {
+  border-color: #990000;
+  background: rgba(255,255,255,0.75);
+}
+
+.dashboard .own,
+.comment span.unreviewed {
+  background: rgba(255,255,255,0.5);
+}

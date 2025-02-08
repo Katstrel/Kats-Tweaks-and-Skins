@@ -1,0 +1,51 @@
+#workskin div.preface .title,
+#workskin div.preface .byline,
+#workskin div.preface .byline a {
+  font-family: 'Castoro Titling', 'Felix Titling', 'Brush Script MT', 'Garamond', serif;
+}
+
+#workskin hr {
+	border: none;
+	border-top: 3px double #808080;
+}
+
+#workskin .patriciapoem {
+	background-color: #808080;
+	background-image: radial-gradient(circle at 50% 35%, #e2a600,  #de7d00, #bf3900, #920d03, #611405);
+	background-size: 100% 150%;
+	background-clip: text;
+	-webkit-background-clip: text;
+	-moz-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	-moz-text-fill-color: transparent;
+}
+
+#workskin .dateheading::before {
+	content: "● 〈   ";
+}
+
+#workskin .dateheading::after {
+	content: "   〉 ●";
+}
+
+#workskin .texting {
+	padding: 1ch;
+}
+
+#workskin .texting .alri {
+	margin-left: 5ch;
+}
+
+#workskin .texting .alle {
+	margin-right: 5ch;
+}
+
+#workskin .email {
+	border: 1px solid black;
+	padding: 2pc;
+}
+
+#workskin .link {
+	text-decoration: underline;
+	color: #167ac8;
+}

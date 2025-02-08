@@ -1,0 +1,37 @@
+/* Parent Skin: https://archiveofourown.org/skins/887 */
+#header a,
+#header fieldset,
+#header form,
+#header p,
+#header li,
+#header h1,
+#small_login dl {
+  font-size: 10pt;
+}
+
+#header .heading a {
+  font-size: 24pt;
+}
+
+ul.actions,
+p.actions,
+li.actions,
+span.actions,
+fieldset.actions,
+dd.actions {
+  font-size: 10pt;
+}
+
+#inner {
+  padding: .5em .25em;
+}
+
+#workskin {
+  padding: 0em;
+}
+
+#main,
+#main.dashboard {
+  padding-left: 2%;
+  padding-right: 2%;
+}

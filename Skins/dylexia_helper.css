@@ -1,0 +1,10 @@
+body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    letter-spacing: .07rem;
+    font-weight: 700;
+}
+  
+b,
+strong {
+    font-weight: normal;
+}
