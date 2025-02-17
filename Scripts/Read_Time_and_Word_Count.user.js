@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Read Time & Word Count
 // @author       Katstrel
 // @description  Adds chapter word count, chapter read time, and work read time to stats in the blurb.
-// @version      1.0.1
+// @version      1.1
+// @history      1.1 - added dynamic customization options
 // @history      1.0.1 - fixed userscript header
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
@@ -16,16 +17,32 @@ let DEBUG = false;
 
 // তততততততত SETTINGS তততততততত //
 
-let settings = {
+let SETTINGS = {
     readTime: {
+        enabled: true,
         wordsPerMinute: 200,
-        lvlMins1: 60,
-        lvlMins2: 180,
-        highlightLevel0: 'rgba(0, 204, 0, 0.25)',
-        highlightLevel1: 'rgba(255, 255, 0, 0.25)',
-        highlightLevel2: 'rgba(204, 0, 0, 0.25)',
+        levels: [
+            {
+                id: "Level_0",
+                name: "Level_0",
+                mins: 0,
+                color: '#80ff8080',
+            },
+            {
+                id: "Level_1",
+                name: "Level_1",
+                mins: 60,
+                color: '#ffff8080',
+            },
+            {
+                id: "Level_2",
+                name: "Level_2",
+                mins: 180,
+                color: '#ff808080',
+            },
+        ],
     }
-}
+};
 
 // তততততত STOP SETTINGS তততততত //
 
@@ -35,33 +52,13 @@ AO3: Estimated Reading Time v2 by lomky
 AO3: Get Current Chapter Word Count by w4tchdoge
 */
 
-// StyleManager v1.0 
-class StyleManager {
-    // Creates a term and definition and appends after given dd query value
-    static addDLItem(querySelect, term, definiton, styleClass) {
-        const descListTerm = Object.assign(document.createElement(`dt`), {
-            id: `katstweaks`,
-            className: styleClass || "",
-            textContent: term || "",
-        });
-        const descListDefine = Object.assign(document.createElement(`dd`), {
-            id: `katstweaks`,
-            className: styleClass || "",
-            textContent: definiton || ""
-        });
-
-        querySelect.after(descListTerm, descListDefine);
-        DEBUG && console.info(`[Kat's Tweaks] Custom DLItem '${term}' added successfully`);
-        return [descListTerm, descListDefine]
-    }
-}
-
 class ReadTime {
-    constructor() {
-        DEBUG && console.log(`[Kat's Tweaks] Initializing ReadTime`);
+    constructor(settings) {
+        this.settings = settings;
+        DEBUG && console.log(`[Kat's Tweaks] Initializing ReadTime`, this.settings.readTime);
 
         // Performs the Read Time on all blurbs
-        document.querySelectorAll('li.work.blurb, li.bookmark.blurb, dl.work.meta, dl.series.meta').forEach(blurb=> {
+        document.querySelectorAll('li.work.blurb, li.bookmark.blurb, dl.work.meta, dl.series.meta, li.series.blurb').forEach(blurb=> {
             let wordCount = this.getWordCount(blurb);
             this.calculateTime(blurb.querySelector('dd.words'), wordCount);
         });
@@ -72,7 +69,7 @@ class ReadTime {
             if (window.location.pathname.toLowerCase().includes(`chapters`) && chapCount > 1) {
                 const chapWord = this.chapWordCount();
                 const formatCount = new Intl.NumberFormat({ style: `decimal` }).format(chapWord);
-                StyleManager.addDLItem(document.querySelector('dl.stats dd.chapters'), 'Words in Chapter:', formatCount, 'chapterWords')
+                this.addBlurbStat(document.querySelector('dl.stats dd.chapters'), 'Words in Chapter:', formatCount, 'chapterWords');
                 this.calculateTime(document.querySelector('dd#katstweaks.chapterWords'), chapWord, 'Chapter');
             }
         }
@@ -96,25 +93,25 @@ class ReadTime {
     }
 
     calculateTime(querySelect, wordCount, type = '') {
-        let minutes = wordCount/(settings.readTime.wordsPerMinute);
+        let minutes = wordCount/(this.settings.readTime.wordsPerMinute);
         let hrs = Math.floor(minutes/60);
         let mins = (minutes%60).toFixed(0);
 
         // Get minutes with zero decimal points
-        let timePrint = hrs > 0 ? hrs + "h" + mins + "m" : mins + "m"
-        console.log(`[Kat's Tweaks] Read Time ${type}: ${wordCount} (${timePrint})`)
+        let timePrint = hrs > 0 ? hrs + "h" + mins + "m" : mins + "m";
+        console.log(`[Kat's Tweaks] Read Time ${type}: ${wordCount} (${timePrint})`);
 
         // Add readtime stats
-        let dlItem = StyleManager.addDLItem(querySelect, `${type} Readtime:`, timePrint, 'readtime')
-        if (minutes <= settings.readTime.lvlMins1) {
-            dlItem[1].style.backgroundColor = settings.readTime.highlightLevel0;
-        }
-        else if (minutes <= settings.readTime.lvlMins2) {
-            dlItem[1].style.backgroundColor = settings.readTime.highlightLevel1;
-        }
-        else {
-            dlItem[1].style.backgroundColor = settings.readTime.highlightLevel2;
-        }
+        let dlItem = this.addBlurbStat(querySelect, `${type} Readtime:`, timePrint, `${type}readtime`);
+
+        // Finds the closest smaller value for read time
+        let filteredLevels = this.settings.readTime.levels.filter((level) => {
+            return level.mins <= minutes;
+        });
+        let sorted = filteredLevels.sort(function(a, b){return a.mins - b.mins});
+        DEBUG && console.log(`[Kat's Tweaks] Sorted list`, sorted);
+
+        dlItem[1].style.backgroundColor = sorted[sorted.length-1].color;
     }
     
     // Credit: w4tchdoge's AO3: Get Current Chapter Word Count
@@ -141,6 +138,60 @@ class ReadTime {
         return word_count_int;
     }
 
+    addBlurbStat(querySelectDL, term, definiton, styleClass) {
+        const descListTerm = Object.assign(document.createElement(`dt`), {
+            id: `katstweaks`,
+            className: styleClass || "",
+            textContent: term || "",
+        });
+        const descListDefine = Object.assign(document.createElement(`dd`), {
+            id: `katstweaks`,
+            className: styleClass || "",
+            textContent: definiton || ""
+        });
+
+        querySelectDL.after(descListTerm, descListDefine);
+        DEBUG && console.info(`[Kat's Tweaks] Custom DLItem '${term}' added successfully`);
+        return [descListTerm, descListDefine];
+    }
+
 }
 
-const main = new ReadTime();
+class Main {
+    constructor() {
+        this.settings = this.loadSettings();
+        if (this.settings.readTime.enabled) {
+            new ReadTime(this.settings);
+        }
+    }
+
+    // Load settings from the storage or fallback to default ones
+    loadSettings() {
+        const startTime = performance.now();
+        let savedSettings = localStorage.getItem('KT-SavedSettings');
+        let settings = SETTINGS;
+
+        if (savedSettings) {
+            try {
+                let parse = JSON.parse(savedSettings);
+                DEBUG && console.log(`[Kat's Tweaks] Settings loaded successfully:`, savedSettings);
+
+                // Makes sure there IS a value present
+                settings.readTime.enabled = parse.readTime.enabled || SETTINGS.readTime.enabled;
+                settings.readTime.wordsPerMinute = parse.readTime.wordsPerMinute || SETTINGS.readTime.wordsPerMinute;
+                settings.readTime.levels = parse.readTime.levels || SETTINGS.readTime.levels;
+
+            } catch (error) {
+                DEBUG && console.error(`[Kat's Tweaks] Error parsing settings: ${error}`);
+            }
+        } else {
+            DEBUG && console.warn(`[Kat's Tweaks] No saved settings found for Read Time & Word Count, using default settings.`);
+        }
+
+        const endTime = performance.now();
+        DEBUG && console.log(`[Kat's Tweaks] Settings loaded in ${endTime - startTime} ms`);
+        return settings;
+    }
+}
+
+new Main();
