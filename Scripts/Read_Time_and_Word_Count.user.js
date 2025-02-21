@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Read Time & Word Count
 // @author       Katstrel
 // @description  Adds chapter word count, chapter read time, and work read time to stats in the blurb.
-// @version      1.1
+// @version      1.1.1
+// @history      1.1.1 - added fourth default level and fixed error with deleted bookmark blurbs
 // @history      1.1 - added dynamic customization options
 // @history      1.0.1 - fixed userscript header
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
@@ -40,6 +41,12 @@ let SETTINGS = {
                 mins: 180,
                 color: '#ff808080',
             },
+            {
+                id: "Level_3",
+                name: "24 Hours",
+                mins: 1440,
+                color: '#ff80ff80',
+            },
         ],
     }
 };
@@ -54,11 +61,14 @@ AO3: Get Current Chapter Word Count by w4tchdoge
 
 class ReadTime {
     constructor(settings) {
-        this.settings = settings;
-        DEBUG && console.log(`[Kat's Tweaks] Initializing ReadTime`, this.settings.readTime);
+        this.settings = settings.readTime;
+        console.info(`[Kat's Tweaks] Read Time & Word Count | Initialized with:`, this.settings);
 
         // Performs the Read Time on all blurbs
         document.querySelectorAll('li.work.blurb, li.bookmark.blurb, dl.work.meta, dl.series.meta, li.series.blurb').forEach(blurb=> {
+            if (blurb.querySelector('p.message')) {
+                return;
+            }
             let wordCount = this.getWordCount(blurb);
             this.calculateTime(blurb.querySelector('dd.words'), wordCount);
         });
@@ -93,19 +103,19 @@ class ReadTime {
     }
 
     calculateTime(querySelect, wordCount, type = '') {
-        let minutes = wordCount/(this.settings.readTime.wordsPerMinute);
+        let minutes = wordCount/(this.settings.wordsPerMinute);
         let hrs = Math.floor(minutes/60);
         let mins = (minutes%60).toFixed(0);
 
         // Get minutes with zero decimal points
         let timePrint = hrs > 0 ? hrs + "h" + mins + "m" : mins + "m";
-        console.log(`[Kat's Tweaks] Read Time ${type}: ${wordCount} (${timePrint})`);
+        console.info(`[Kat's Tweaks] Time calculated for ${wordCount} words: ${timePrint}`);
 
         // Add readtime stats
         let dlItem = this.addBlurbStat(querySelect, `${type} Readtime:`, timePrint, `${type}readtime`);
 
         // Finds the closest smaller value for read time
-        let filteredLevels = this.settings.readTime.levels.filter((level) => {
+        let filteredLevels = this.settings.levels.filter((level) => {
             return level.mins <= minutes;
         });
         let sorted = filteredLevels.sort(function(a, b){return a.mins - b.mins});
@@ -176,10 +186,7 @@ class Main {
                 let parse = JSON.parse(savedSettings);
                 DEBUG && console.log(`[Kat's Tweaks] Settings loaded successfully:`, savedSettings);
 
-                // Makes sure there IS a value present
-                settings.readTime.enabled = parse.readTime.enabled || SETTINGS.readTime.enabled;
-                settings.readTime.wordsPerMinute = parse.readTime.wordsPerMinute || SETTINGS.readTime.wordsPerMinute;
-                settings.readTime.levels = parse.readTime.levels || SETTINGS.readTime.levels;
+                settings = parse;
 
             } catch (error) {
                 DEBUG && console.error(`[Kat's Tweaks] Error parsing settings: ${error}`);
