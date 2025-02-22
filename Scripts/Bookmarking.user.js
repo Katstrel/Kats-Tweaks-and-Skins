@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Bookmarking
 // @author       Katstrel
 // @description  Bookmark tracking, tagging, and more.
-// @version      1.0.1
+// @version      1.0.2
+// @history      1.0.2 - fixed list page series blurbs from not displaying bookmark style
 // @history      1.0.1 - disabled comment tag feature and buttons at the top of series pages
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
@@ -1169,7 +1170,7 @@ class Main {
             if (document.getElementById('bookmark_tag_string_autocomplete')) {
                 new BookPage(this.settings, moduleID);
             }
-            let blurbs = document.querySelectorAll('li.work.blurb, li.bookmark.blurb');
+            let blurbs = document.querySelectorAll('li.work.blurb, li.bookmark.blurb, li.series.blurb');
             blurbs.forEach((blurb) => {
                 new BookBlurb(this.settings, blurb, moduleID);
             });
