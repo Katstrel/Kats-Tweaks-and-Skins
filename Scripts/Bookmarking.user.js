@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Bookmarking
 // @author       Katstrel
 // @description  Bookmark tracking, tagging, and more.
-// @version      1.0
+// @version      1.0.1
+// @history      1.0.1 - disabled comment tag feature and buttons at the top of series pages
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -254,6 +255,9 @@ class Bookmarking {
             }
         }
         else {
+            console.log(`[Kat's Tweaks] Adding tag: Series`);
+            blurb.querySelector('#bookmark_tag_string_autocomplete').value += `${'Series'}, `;
+            this.tags.push('Series');
             if (blurb.querySelector('dl.stats').innerHTML.includes('Yes')) {
                 console.log(`[Kat's Tweaks] Adding tag: ${tagComplete}`);
                 blurb.querySelector('#bookmark_tag_string_autocomplete').value += `${tagComplete}, `;
@@ -498,11 +502,13 @@ class BookPage extends Bookmarking {
         this.statusTags(document, this.words);
         this.updateStorage(this.blurb, this.storageID, this.tags);
 
-        this.buttonComment(this.settings.databaseInfo[2].enabled);
-        this.buttonKudos(this.settings.databaseInfo[3].enabled);
-        this.buttonSubscribe(this.settings.databaseInfo[5].enabled);
-        this.buttonTags(this.storageID, this.getBookmarkData());
-        this.buttonLastRead(this.getBookmarkData());
+        if (!this.isSeries) {
+            //this.buttonComment(this.settings.databaseInfo[2].enabled);
+            this.buttonKudos(this.settings.databaseInfo[3].enabled);
+            this.buttonSubscribe(this.settings.databaseInfo[5].enabled);
+            this.buttonTags(this.storageID, this.getBookmarkData());
+            this.buttonLastRead(this.getBookmarkData());
+        }
 
         this.formNoteButtons(document, "#bookmark_notes", this.workID, this.descrip, this.summary, this.notes);
         this.formTagButtons(document, this.workID);
@@ -541,13 +547,14 @@ class BookPage extends Bookmarking {
     buttonComment(pushBM) {
         let chapterID = getChapterID();
         document.querySelectorAll(`input#comment_submit_for_${this.workID}, input#comment_submit_for_${chapterID}`).forEach(button => {
-            button.addEventListener('click', (event) => {
+            button.addEventListener('click', async (event) => {
                 event.preventDefault();
                 console.log(`[Kat's Tweaks] Adding tag: Commented`);
-                document.querySelector('#bookmark_tag_string_autocomplete').value += `Commented, `;
-                this.tags.push('Commented');
                 this.storage.addIdToCategory(`${this.id}-INFO-Commented`, this.storageID);
                 if (pushBM) {
+                    document.querySelector('#bookmark_tag_string_autocomplete').value += `Commented, `;
+                    this.tags.push('Commented');
+                    await new Promise(res => setTimeout(res, 1000));
                     this.requestHandler(this.getBookmarkData(), this.workID, this.settings.showUpdatedBookmarks)
                 }
             });
@@ -564,14 +571,15 @@ class BookPage extends Bookmarking {
 
     buttonKudos(pushBM) {
         document.querySelectorAll(`#kudo_submit`).forEach(button => {
-            button.addEventListener('click', (event) => {
+            button.addEventListener('click', async (event) => {
                 event.preventDefault();
                 console.log(`[Kat's Tweaks] Adding tag: Kudosed`);
-                this.storage.addIdToCategory(`${this.id}-INFO-Kudosed`, storageID);
+                this.storage.addIdToCategory(`${this.id}-INFO-Kudosed`, this.storageID);
                 if (pushBM) {
                     document.querySelector('#bookmark_tag_string_autocomplete').value += `Kudosed, `;
                     this.tags.push('Kudosed');
-                    this.requestHandler(this.getBookmarkData(), this.workID, this.settings.showUpdatedBookmarks)
+                    await new Promise(res => setTimeout(res, 1000));
+                    this.requestHandler(this.getBookmarkData(), this.workID, false)
                 }
             });
         });
@@ -579,13 +587,14 @@ class BookPage extends Bookmarking {
 
     buttonSubscribe(pushBM) {
         document.querySelectorAll(`form#new_subscription`).forEach(button => {
-            button.addEventListener('click', (event) => {
+            button.addEventListener('click', async (event) => {
                 event.preventDefault();
                 console.log(`[Kat's Tweaks] Adding tag: Subscribed`);
-                this.storage.addIdToCategory(`${this.id}-INFO-Subscribed`, storageID);
+                this.storage.addIdToCategory(`${this.id}-INFO-Subscribed`, this.storageID);
                 if (pushBM) {
                     document.querySelector('#bookmark_tag_string_autocomplete').value += `Subscribed, `;
                     this.tags.push('Subscribed');
+                    await new Promise(res => setTimeout(res, 1000));
                     this.requestHandler(this.getBookmarkData(), this.workID, this.settings.showUpdatedBookmarks)
                 }
             });

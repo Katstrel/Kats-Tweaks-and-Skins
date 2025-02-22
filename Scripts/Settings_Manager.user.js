@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Settings Manager
 // @author       Katstrel
 // @description  Controls the storage and modification of various settings for all Kat's Tweaks scripts.
-// @version      1.1
+// @version      1.1.1
+// @history      1.1.1 - bookmarking hotfix: disabled comment tag feature and series blurb tag buttons
 // @history      1.1 - added settings for Bookmarking module
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
@@ -653,7 +654,7 @@ class SettingsBookmarking extends SettingsMenu {
         }));
 
         this.simpleTrueFalse('When Leaving Kudos:', 'kudosed', this.settings.databaseInfo[3].enabled)
-        this.simpleTrueFalse('When Commenting:', 'commented', this.settings.databaseInfo[2].enabled)
+        //this.simpleTrueFalse('When Commenting:', 'commented', this.settings.databaseInfo[2].enabled)
         this.simpleTrueFalse('When Subscribing:', 'subscribed', this.settings.databaseInfo[5].enabled)
         this.menuHardRule(this.container);
 
