@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Settings Manager
 // @author       Katstrel
 // @description  Controls the storage and modification of various settings for all Kat's Tweaks scripts.
-// @version      1.1.1
+// @version      1.1.2
+// @history      1.1.2 - fixed saved settings being broken after removing comment tag feature
 // @history      1.1.1 - bookmarking hotfix: disabled comment tag feature and series blurb tag buttons
 // @history      1.1 - added settings for Bookmarking module
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
@@ -966,7 +967,7 @@ class SettingsBookmarking extends SettingsMenu {
         this.settings.showUpdatedBookmarks = document.getElementById(`${this.id}-showupdate`).checked;
         this.settings.hideDefaultToreadBtn = document.getElementById(`${this.id}-hidemark`).checked;
 
-        this.settings.databaseInfo[2].enabled = document.getElementById(`${this.id}-commented`).checked;
+        //this.settings.databaseInfo[2].enabled = document.getElementById(`${this.id}-commented`).checked;
         this.settings.databaseInfo[3].enabled = document.getElementById(`${this.id}-kudosed`).checked;
         this.settings.databaseInfo[5].enabled = document.getElementById(`${this.id}-subscribed`).checked;
 
