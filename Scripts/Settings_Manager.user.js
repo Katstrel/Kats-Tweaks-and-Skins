@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Settings Manager
 // @author       Katstrel
 // @description  Controls the storage and modification of various settings for all Kat's Tweaks scripts.
-// @version      1.1.2
+// @version      1.1.3
+// @history      1.1.3 - fixed setting validation, it's stupid but works
 // @history      1.1.2 - fixed saved settings being broken after removing comment tag feature
 // @history      1.1.1 - bookmarking hotfix: disabled comment tag feature and series blurb tag buttons
 // @history      1.1 - added settings for Bookmarking module
@@ -582,8 +583,11 @@ class SettingsReadTime extends SettingsMenu {
         const setLoaded = LOADED_SETTINGS.readTime;
         let settings = setLoaded || setDefault;
 
-        settings.wordsPerMinute = setLoaded.wordsPerMinute || setDefault.wordsPerMinute;
-        settings.levels = setLoaded.levels || setDefault.levels;
+        try { settings.wordsPerMinute = setLoaded.wordsPerMinute; }
+        catch { settings.wordsPerMinute = setDefault.wordsPerMinute; }
+
+        try { settings.levels = setLoaded.levels; }
+        catch { settings.levels = setDefault.levels; }
 
         return settings;
     }
@@ -998,14 +1002,24 @@ class SettingsBookmarking extends SettingsMenu {
         let settings = setLoaded || setDefault;
 
         // Value Settings
-        settings.dateFormat = setLoaded.dateFormat || setDefault.dateFormat;
-        settings.defaultNote = setLoaded.defaultNote || setDefault.defaultNote;
-        settings.details = setLoaded.details || setDefault.details;
+        try { settings.dateFormat = setLoaded.dateFormat; }
+        catch { settings.dateFormat = setDefault.dateFormat; }
+
+        try { settings.defaultNote = setLoaded.defaultNote; }
+        catch { settings.defaultNote = setDefault.defaultNote; }
+
+        try { settings.details = setLoaded.details; }
+        catch { settings.details = setDefault.details; }
 
         // Databases
-        settings.databaseInfo = setLoaded.databaseInfo || setDefault.databaseInfo;
-        settings.databaseTags = setLoaded.databaseTags || setDefault.databaseTags;
-        settings.databaseWord = setLoaded.databaseWord || setDefault.databaseWord;
+        try { settings.databaseInfo = setLoaded.databaseInfo; }
+        catch { settings.databaseInfo = setDefault.databaseInfo; }
+
+        try { settings.databaseTags = setLoaded.databaseTags; }
+        catch { settings.databaseTags = setDefault.databaseTags; }
+
+        try { settings.databaseWord = setLoaded.databaseWord; }
+        catch { settings.databaseWord = setDefault.databaseWord; }
 
         return settings;
     }
