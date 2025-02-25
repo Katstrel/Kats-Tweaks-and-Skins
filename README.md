@@ -1,7 +1,12 @@
 
 # Userscripts
 
-These are userscripts to be used in conjuction with [TamperMonkey](https://www.tampermonkey.net/) or [Userscripts for Safari](https://apps.apple.com/us/app/userscripts/id1463298887).
+These are userscripts to be used in conjuction with a userscript extension. My recommendations are below.  
+Note: Chromium includes nearly any browser besides Firefox based browsers and Safari. Chrome, Edge, Opera, Brave, and Vivaldi are Chromium browsers to name a few.  
+
+Firefox: [TamperMonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)  
+Chromium: [TamperMonkey](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?pli=1) (May have to [Enable Developer Mode](https://youtu.be/vGxpOBnLzp8))  
+Safari: [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
 
 ## Installation
 
