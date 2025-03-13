@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         [AO3] Kat's Tweaks: Tag & Bookmark Colors
+// @name         [AO3] Kat's Tweaks: Tag Colors
 // @author       Katstrel
-// @description  Allows for color coding bookmarks and more.
-// @version      0.1.0
+// @description  Allows for color coding tags.
+// @version      0.1.1
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -19,57 +19,77 @@ let DEBUG = true;
 let SETTINGS = {
     tagColor: {
         enabled: true,
+        cssMode: false,
         databaseWarn: [
             {
                 keyID: "no-warn",
-                tagName: "No Warnings Apply",
+                priority: 0,
+                tagName: ["No Archive Warnings Apply"],
                 color: '#80ff8080',
+                css: `background-color: #80ff8080 !important;`,
             },
             {
                 keyID: "choose-not",
-                tagName: "Choose Not To Use",
+                priority: 0,
+
+                tagName: ["Chose Not To Use"],
                 color: '#ffff8080',
+                css: `background-color: #ffff8080 !important;`,
             },
             {
                 keyID: "violence",
-                tagName: "Graphic Violence",
+                priority: 0,
+                tagName: ["Violence"],
                 color: '#ff808080',
+                css: `background-color: #ff808080 !important;`,
             },
             {
                 keyID: "mcd",
-                tagName: "Major Character Death",
-                color: '#80808080',
+                priority: 0,
+                tagName: ["Death"],
+                color: '#ff80ff80',
+                css: `background-color: #ff80ff80 !important;`,
             },
             {
                 keyID: "noncon",
-                tagName: "Non-Con",
-                color: '#80ffff80',
+                priority: 0,
+                tagName: ["Non-Con"],
+                color: '#8080ff80',
+                css: `background-color: #8080ff80 !important;`,
             },
             {
                 keyID: "underage",
-                tagName: "Underage",
-                color: '#8080ff80',
+                priority: 0,
+                tagName: ["Underage"],
+                color: '#80ffff80',
+                css: `background-color: #80ffff80 !important;`,
             },
         ],
         databaseShip: [
             {
                 keyID: "example",
-                tagName: 'Example/Example',
+                priority: 0,
+                tagName: ['Example & Example'],
                 color: '#80808080',
+                css: `background-color: #80808080 !important;`,
             },
         ],
         databaseChar: [
             {
                 keyID: "example",
-                tagName: 'Example Character',
+                priority: 0,
+                tagName: ['Example Character'],
                 color: '#80808080',
+                css: `background-color: #80808080 !important;`,
             },
         ],
         databaseFree: [
             {
                 keyID: "example",
-                tagName: 'Example Tag',
+                priority: 0,
+                tagName: ['Example Tag'],
                 color: '#80808080',
+                css: `background-color: #80808080 !important;`,
             },
         ],
     }
@@ -88,27 +108,61 @@ class TagColors {
             if (blurb.querySelector('p.message')) { return; }
             DEBUG && console.log(`[Kat's Tweaks] Blurb found: `, blurb);
 
-            this.blurbTags(blurb, 'li.warnings a', this.settings.databaseWarn);
-            this.blurbTags(blurb, 'li.relationships a', this.settings.databaseShip);
-            this.blurbTags(blurb, 'li.characters a', this.settings.databaseChar);
-            this.blurbTags(blurb, 'li.freeforms a', this.settings.databaseFree);
+            this.blurbTags(blurb, 'WARN', this.settings.databaseWarn, 'dd.warning a.tag, ul.tags li.warnings a');
+            this.blurbTags(blurb, 'SHIP', this.settings.databaseShip, 'dd.relationship a.tag, ul.tags li.relationships a');
+            this.blurbTags(blurb, 'CHAR', this.settings.databaseChar, 'dd.character a.tag, ul.tags li.characters a');
+            this.blurbTags(blurb, 'FREE', this.settings.databaseFree, 'dd.freeform a.tag, ul.tags li.freeforms a');
 
         });
+
+        // Add styling to tags
+        this.styleTags('WARN', this.settings.databaseWarn, this.settings.cssMode);
+        this.styleTags('SHIP', this.settings.databaseShip, this.settings.cssMode);
+        this.styleTags('CHAR', this.settings.databaseChar, this.settings.cssMode);
+        this.styleTags('FREE', this.settings.databaseFree, this.settings.cssMode);
+
     }
 
-    blurbTags(blurb, query, database) {
-        let tags = blurb.querySelectorAll(`ul.tags ${query}`);
+    blurbTags(blurb, tagType, database, query) {
+        let tags = blurb.querySelectorAll(query);
         DEBUG && console.log(`[Kat's Tweaks] Tags found: `, tags);
         tags.forEach(tag => {
             database.forEach(({keyID, tagName, color}) => {
-                if (tag.innerText == tagName) {
-                    tag.style.backgroundColor = color;
-                    DEBUG && console.log(`[Kat's Tweaks] Tag ${tagName} set to ${color}`);
+                let tagIncluded = false;
+                tagName.forEach((tagText) => {
+                    if (tag.innerText.includes(tagText)) {
+                        tagIncluded = true;
+                    }
+                });
+                if (tagIncluded) {
+                    tag.classList.add(`${this.id}-${tagType}-${keyID}`);
+                    DEBUG && console.log(`[Kat's Tweaks] Tag ${tagName} set to ${keyID}`);
                 }
             });
         });
     }
 
+    styleTags(tagType, database, useCSS) {
+        database.sort((a,b) => a.priority - b.priority);
+        database.forEach(({keyID, color, css}) => {
+            if (useCSS) {
+                StyleManager.addStyle(`ADVANCED ${tagType}-${keyID}`, `.${this.id}-${tagType}-${keyID} { ${css} }`)
+            }
+            else {
+                StyleManager.addStyle(`SIMPLE ${tagType}-${keyID}`, `.${this.id}-${tagType}-${keyID} { background-color: ${color} !important; }`)
+            }
+        });
+    }
+}
+
+class StyleManager {
+    static addStyle(debugID, css) {
+        const customStyle = document.createElement('style');
+        customStyle.id = 'KT';
+        customStyle.innerHTML = css;
+        document.head.appendChild(customStyle);
+        DEBUG && console.info(`[Kat's Tweaks] Custom style '${debugID}' added successfully`);
+    }
 }
 
 class Main {
