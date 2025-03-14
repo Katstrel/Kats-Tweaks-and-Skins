@@ -18,3 +18,4 @@ Safari: [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
 | [Settings Manager](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Settings_Manager.user.js) | Provides an interface to control and save settings for all scripts |
 | [Bookmarking](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Bookmarking.user.js) | Bookmark tracking, tagging, and more |
 | [Read Time & Word Count](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Read_Time_and_Word_Count.user.js) | Estimated read time for works and chapters |
+| [Tag Colors](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Tag_Colors.user.js) | Create color coding for tags |
