@@ -2,27 +2,24 @@
 // @name         [AO3] Kat's Tweaks: Settings Manager
 // @author       Katstrel
 // @description  Controls the storage and modification of various settings for all Kat's Tweaks scripts.
-// @version      1.1.3
-// @history      1.1.3 - fixed setting validation, it's stupid but works
-// @history      1.1.2 - fixed saved settings being broken after removing comment tag feature
-// @history      1.1.1 - bookmarking hotfix: disabled comment tag feature and series blurb tag buttons
-// @history      1.1 - added settings for Bookmarking module
+// @version      1.2.0
+// @history      1.2.0 - added settings for Tag Colors module
+// @history      1.1.0 - added settings for Bookmarking module
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.2/jscolor.min.js
 // @grant        none
-// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Settings_Manager.user.js
-// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Settings_Manager.user.js
+// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/dev/Scripts/Settings_Manager.user.js
+// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/dev/Scripts/Settings_Manager.user.js
 // ==/UserScript==
 "use strict";
-let DEBUG = false;
+let DEBUG = true;
 
 /*
     This userscript is to be used in conjuntion with the other scripts I've released.
     Set all scripts to update automatically and they should be good to go!
-    Do NOT edit settings here, edit them in your preference page on AO3
-    For users without an account, use the button on the header bar.
+    Do NOT edit settings here, edit them in the header bar on AO3
 */
 
 let LOADED_SETTINGS = {};
@@ -161,6 +158,90 @@ let DEFAULT_SETTINGS = {
                 wordMax: Infinity,
             },
         ],
+    },
+    tagColor: {
+        enabled: true,
+        cssMode: false,
+        databaseWarn: [
+            {
+                keyID: "no-warn",
+                keyName: 'No Warnings',
+                priority: 0,
+                tagNames: ["No Archive Warnings Apply"],
+                color: '#80ff8080',
+                css: `background-color: #80ff8080 !important;`,
+            },
+            {
+                keyID: "chose-not",
+                keyName: 'Chose Not To Use Warnings',
+                priority: 0,
+                tagNames: ["Chose Not To Use"],
+                color: '#ffff8080',
+                css: `background-color: #ffff8080 !important;`,
+            },
+            {
+                keyID: "violence",
+                keyName: 'Graphic Violence',
+                priority: 0,
+                tagNames: ["Violence"],
+                color: '#ff808080',
+                css: `background-color: #ff808080 !important;`,
+            },
+            {
+                keyID: "mcd",
+                keyName: 'Major Character Death',
+                priority: 0,
+                tagNames: ["Death"],
+                color: '#ff80ff80',
+                css: `background-color: #ff80ff80 !important;`,
+            },
+            {
+                keyID: "noncon",
+                keyName: 'Non-Con',
+                priority: 0,
+                tagNames: ["Non-Con"],
+                color: '#8080ff80',
+                css: `background-color: #8080ff80 !important;`,
+            },
+            {
+                keyID: "underage",
+                keyName: 'Underage',
+                priority: 0,
+                tagNames: ["Underage"],
+                color: '#80ffff80',
+                css: `background-color: #80ffff80 !important;`,
+            },
+        ],
+        databaseShip: [
+            {
+                keyID: "example",
+                keyName: 'Example',
+                priority: 0,
+                tagNames: ['Example & Example'],
+                color: '#80808080',
+                css: `background-color: #80808080 !important;`,
+            },
+        ],
+        databaseChar: [
+            {
+                keyID: "example",
+                keyName: 'Example',
+                priority: 0,
+                tagNames: ['Example Character'],
+                color: '#80808080',
+                css: `background-color: #80808080 !important;`,
+            },
+        ],
+        databaseFree: [
+            {
+                keyID: "example",
+                keyName: 'Example',
+                priority: 0,
+                tagNames: ['Example Tag'],
+                color: '#80808080',
+                css: `background-color: #80808080 !important;`,
+            },
+        ],
     }
 };
 
@@ -177,6 +258,7 @@ class SettingsManager {
             this.getMenuButton('— Tweaks Modules —'),
             this.getMenuButton('Bookmarking', this.initBookmarking),
             this.getMenuButton('Read Time & Word Count', this.initReadTime),
+            this.getMenuButton('Tag Color', this.initTagColor),
         );
     }
 
@@ -193,6 +275,11 @@ class SettingsManager {
     initBookmarking() {
         let container = StyleManager.SETM_SettingsContainer();
         new SettingsBookmarking(container);
+    }
+
+    initTagColor() {
+        let container = StyleManager.SETM_SettingsContainer();
+        new SettingsTagColor(container);
     }
 
     getMenuButton(text, func) {
@@ -312,6 +399,87 @@ class SettingsMenu {
         });
         container.append(span);
         return span;
+    }
+
+    menuSectionText(container, heading, paragraph) {
+        container.append(Object.assign(document.createElement('h2'), {
+            textContent: heading,
+        }));
+        container.append(Object.assign(document.createElement('p'), {
+            textContent: paragraph,
+        }));
+    }
+    
+    createColorPick(container, moduleID, elementID, itemID, itemColor) {
+        container.append(Object.assign(document.createElement('span'), {
+            id: `${moduleID}-colorSpan-${itemID}`,
+        }));
+        document.getElementById(`${moduleID}-colorSpan-${itemID}`).innerHTML += `<input id="${moduleID}-colorPick-${itemID}" data-jscolor="{}" value="#80808080">`
+        jscolor.install() // recognizes new inputs and installs jscolor on them
+        
+        // Color Picker
+        let colorPick = document.getElementById(`${moduleID}-colorPick-${itemID}`);
+        colorPick.jscolor.alphaChannel = true;
+        colorPick.jscolor.format = 'any';
+        colorPick.jscolor.fromString(`${itemColor}`);
+        colorPick.addEventListener("input", function(e) {
+            document.getElementById(`${moduleID}-${elementID}-${itemID}`).style.background = colorPick.jscolor.toHEXAString();
+        });
+        if (LOADED_SETTINGS.reversi) {
+            colorPick.jscolor.backgroundColor = 'rgb(51, 51, 51)';
+            colorPick.jscolor.borderColor = 'rgb(1, 1, 1)';
+            colorPick.jscolor.controlBorderColor = 'rgb(1, 1, 1)';
+        }
+    }
+
+    createNumberBox(container, moduleID, elementID, itemID, defaultNumber) {
+        container.append(Object.assign(document.createElement(`input`), {
+            id: `${moduleID}-${elementID}-${itemID}`,
+            type: 'text',
+            value: defaultNumber,
+        }));
+        StyleManager.setInputFilter(document.getElementById(`${moduleID}-${elementID}-${itemID}`), function(value) {
+            return /^\d*\.?\d*$/.test(value);
+        }, "Only numbers are allowed!");
+    }
+
+    createRemoveItem(container, moduleID, elementID, itemID, database, textValue) {
+        container.append(Object.assign(document.createElement('input'), {
+            type: 'button',
+            id: `${moduleID}-removeItem-${itemID}`,
+            className: 'removeItem',
+            value: textValue || 'Remove',
+        }));
+        document.querySelectorAll(`#${moduleID}-removeItem-${itemID}`).forEach(button => {
+            button.addEventListener('click', () => {
+                database.forEach(({keyID}, index, array) => {
+                    if (keyID == itemID) {
+                        array.splice(index, 1);
+                        DEBUG && console.log(`[Kat's Tweaks] Item Remove ${itemID} | New Item List: `, database);
+                        document.querySelectorAll(`#${moduleID}-${elementID}-${itemID}`).forEach(function() {
+                            document.getElementById(`${moduleID}-${elementID}-${itemID}`).remove();
+                        })
+                    }
+                });
+            })
+        });
+    }
+
+    createUniqueItemInput(container, moduleID) {
+        container.append(Object.assign(document.createElement('input'), {
+            type: 'text',
+            id: `${moduleID}-addItem-text`,
+            value: ""
+        }));
+        StyleManager.setInputFilter(document.getElementById(`${moduleID}-addItem-text`), function(value) {
+            return /^[a-zA-Z0-9\-\_]{0,12}$/.test(value);
+        }, "Only letters, dashes(-), and underscores(_) up to 12 characters are allowed!");
+
+        container.append(Object.assign(document.createElement('input'), {
+            type: 'button',
+            id: `${moduleID}-addItem`,
+            value: 'Add Key ID',
+        }));
     }
 
 }
@@ -545,7 +713,7 @@ class SettingsReadTime extends SettingsMenu {
             button.addEventListener('click', () => {
                 this.settings.levels.forEach(({id}, index, array) => {
                     if (id == levelID) {
-                        array.pop(index);
+                        array.splice(index, 1);
                         DEBUG && console.log(`[Kat's Tweaks] Level Remove ${levelID} | New Levels List: `, this.settings.levels);
                         document.querySelectorAll(`#${moduleID}-levelContainer-${levelID}`).forEach(function() {
                             document.getElementById(`${moduleID}-levelContainer-${levelID}`).remove();
@@ -574,7 +742,8 @@ class SettingsReadTime extends SettingsMenu {
         if (confirmed) {
             LOADED_SETTINGS.readTime = this.settings;
             localStorage.setItem('KT-SavedSettings', JSON.stringify(LOADED_SETTINGS));
-            console.info(`[Kat's Tweaks] Settings Saved:`, LOADED_SETTINGS);
+            DEBUG && console.log(`[Kat's Tweaks] Settings Saved:`, LOADED_SETTINGS);
+            window.location.reload();
         }
     }
 
@@ -736,11 +905,11 @@ class SettingsBookmarking extends SettingsMenu {
         });
     }
 
-    drawTag(tagContainer, moduleID, tagID, tagName, posLabel, negLabel, btnHeader, btnFooter) {
+    drawTag(tagContainer, moduleID, tagID, tagNames, posLabel, negLabel, btnHeader, btnFooter) {
         let newTag = this.menuOptionContainer(tagContainer, `${moduleID}-tagContainer-${tagID}`);
         tagContainer.append(newTag);
         newTag.append(Object.assign(document.createElement('h4'), {
-            innerText: `${tagName}`,
+            innerText: `${tagNames}`,
             align: 'left',
             id: `${moduleID}-tagLabel-${tagID}`,
         }));
@@ -794,7 +963,7 @@ class SettingsBookmarking extends SettingsMenu {
         document.getElementById(`${moduleID}-renameTag-${tagID}`).addEventListener("click", () => {
             this.settings.databaseTags.forEach(({keyID}, index, array) => {
                 if (keyID == tagID) {
-                    let newName = prompt(`[Kat's Tweaks] Renaming ${tagName} (${tagID})\nEnter New Name:`) || tagName;
+                    let newName = prompt(`[Kat's Tweaks] Renaming ${tagNames} (${tagID})\nEnter New Name:`) || tagNames;
                     array[index].name = newName;
                     document.getElementById(`${moduleID}-tagLabel-${tagID}`).innerText = newName;
                 }
@@ -813,7 +982,7 @@ class SettingsBookmarking extends SettingsMenu {
             button.addEventListener('click', () => {
                 this.settings.databaseTags.forEach(({keyID}, index, array) => {
                     if (keyID == tagID) {
-                        array.pop(index);
+                        array.splice(index, 1);
                         DEBUG && console.log(`[Kat's Tweaks] Tag Remove ${tagID} | New Tag List: `, this.settings.databaseTags);
                         document.querySelectorAll(`#${moduleID}-tagContainer-${tagID}`).forEach(function() {
                             document.getElementById(`${moduleID}-tagContainer-${tagID}`).remove();
@@ -890,11 +1059,11 @@ class SettingsBookmarking extends SettingsMenu {
         });
     }
     
-    drawWord(tagContainer, moduleID, tagID, tagName, wordMin, wordMax) {
+    drawWord(tagContainer, moduleID, tagID, tagNames, wordMin, wordMax) {
         let newTag = this.menuOptionContainer(tagContainer, `${moduleID}-tagContainer-${tagID}`);
         tagContainer.append(newTag);
         Object.assign(this.menuSpanInLine(newTag), {
-            innerText: `${tagName}`,
+            innerText: `${tagNames}`,
             id: `${moduleID}-wordsLabel-${tagID}`,
         });
         
@@ -927,7 +1096,7 @@ class SettingsBookmarking extends SettingsMenu {
         document.getElementById(`${moduleID}-renameWords-${tagID}`).addEventListener("click", () => {
             this.settings.databaseWord.forEach(({keyID}, index, array) => {
                 if (keyID == tagID) {
-                    let newName = prompt(`[Kat's Tweaks] Renaming ${tagName} (${tagID})\nEnter New Name:`) || tagName;
+                    let newName = prompt(`[Kat's Tweaks] Renaming ${tagNames} (${tagID})\nEnter New Name:`) || tagNames;
                     array[index].name = newName;
                     document.getElementById(`${moduleID}-wordsLabel-${tagID}`).innerText = newName;
                 }
@@ -946,7 +1115,7 @@ class SettingsBookmarking extends SettingsMenu {
             button.addEventListener('click', () => {
                 this.settings.databaseWord.forEach(({keyID}, index, array) => {
                     if (keyID == tagID) {
-                        array.pop(index);
+                        array.splice(index, 1);
                         DEBUG && console.log(`[Kat's Tweaks] Tag Remove ${tagID} | New Tag List: `, this.settings.databaseWord);
                         document.querySelectorAll(`#${moduleID}-tagContainer-${tagID}`).forEach(function() {
                             document.getElementById(`${moduleID}-tagContainer-${tagID}`).remove();
@@ -993,6 +1162,7 @@ class SettingsBookmarking extends SettingsMenu {
             LOADED_SETTINGS.bookmarking = this.settings;
             localStorage.setItem('KT-SavedSettings', JSON.stringify(LOADED_SETTINGS));
             DEBUG && console.log(`[Kat's Tweaks] Settings Saved:`, LOADED_SETTINGS);
+            window.location.reload();
         }
     }
 
@@ -1020,6 +1190,284 @@ class SettingsBookmarking extends SettingsMenu {
 
         try { settings.databaseWord = setLoaded.databaseWord; }
         catch { settings.databaseWord = setDefault.databaseWord; }
+
+        return settings;
+    }
+}
+
+class SettingsTagColor extends SettingsMenu {
+    constructor(container) {
+        super();
+        this.id = "KT-COLR";
+        this.container = container;
+        this.settings = this.moduleSettingValidation();
+        
+        let title = Object.assign(document.createElement('h1'), {
+            textContent: "Tag Colors",
+        });
+        this.container.append(title);
+        this.container.append(Object.assign(document.createElement('p'), {
+            textContent: `Due to current bug you must save settings after creating a new group before tags will be saved within that group. Sorry for the inconvenience.`,
+        }));
+
+        this.simpleTrueFalse('Module Enabled', 'enabled', this.settings.enabled);
+        this.menuHardRule(this.container);
+
+        // Warnings Database
+        this.menuSectionText(this.container, 'Content Warnings', 'Apply color coding the six content warning labels available.');
+        this.databaseItems(this.settings.databaseWarn, 'WARN', true);
+        this.menuHardRule(this.container);
+
+        // Relationships Database
+        this.menuSectionText(this.container, 'Relationships', 'This works by finding the containing phrase. It must match where the relationship symbol is or it can be left without a symbol to color code any relationships with a character. Such as all relationships with John can be selected with "John". For something like Jane Jones & John Jones, it must be selected with at least "Jones & John" however this might catch any other Jones except Jane. For best results, match the tag exactly. You can assign multiple tags to the same coloring group.');
+        this.container.append(document.createElement('hr'));
+        this.databaseItems(this.settings.databaseShip, 'SHIP');
+        this.menuHardRule(this.container);
+
+        // Character Database
+        this.menuSectionText(this.container, 'Characters', 'This works by finding the containing phrase. To color any tags with Jane Jones, the tag added here can match "Jane" or "Jones". However this will match any Jane or Jones character. For best results, match the tag exactly. You can assign multiple tags to the same coloring group.');
+        this.container.append(document.createElement('hr'));
+        this.databaseItems(this.settings.databaseChar, 'CHAR');
+        this.menuHardRule(this.container);
+
+        // Freeform Database
+        this.menuSectionText(this.container, 'Freeform', 'This works by finding the containing phrase. Tags like "no beta" can be caught as long as the case matches. For tags like "Angst", any other tags that include Angst will also be caught. For best results, match the tag exactly. You can assign multiple tags to the same coloring group. Priority can be used to make sure certain colors have higher priority over others. This might be used to make "No Angst" transparent to disable any coloring that might have been done.');
+        this.container.append(document.createElement('hr'));
+        this.databaseItems(this.settings.databaseFree, 'FREE');
+        this.menuHardRule(this.container);
+        
+        // Actions Footer
+        this.menuActionsMenu(this.container);
+        document.getElementById('KT-SETM-optionssave').addEventListener("click", () => {
+            this.saveSettings();
+        });
+
+    }
+
+    databaseItems(database, listID, immutable) {
+        let container = this.menuOptionContainer(this.container);
+
+        // Create the existing groups
+        let tagContainer = this.menuOptionContainer(container);
+        console.info(`[Kat's Tweaks] Settings Manager - Tags: `, database)
+        database.forEach(({keyID, keyName, priority, tagNames, color, css}) => {
+            this.drawGroup(tagContainer, this.id, listID, keyID, keyName, tagNames, priority, color, css, database, immutable);
+        });
+
+        // Add Tag Group Input
+        if (!immutable) { 
+            this.createUniqueItemInput(container, `${this.id}-${listID}`);
+            document.getElementById(`${this.id}-${listID}-addItem`).addEventListener("click", () => {
+                let textValue = document.getElementById(`${this.id}-${listID}-addItem-text`).value;
+                let alreadyUsed = false;
+                database.forEach(({keyID}) => {
+                    DEBUG && console.log(`[Kat's Tweaks] Testing KeyID: `, keyID);
+                    if (keyID == `${textValue}`) {
+                        alreadyUsed = true;
+                    }
+                });
+    
+                if (`${textValue}` == "") {
+                    DEBUG && console.log(`[Kat's Tweaks] KeyID is empty!`);
+                    let box = document.getElementById(`${this.id}-${listID}-addItem-text`);
+                    box.classList.add("input-error");
+                    box.setCustomValidity("Key ID can't be empty!");
+                    box.reportValidity();
+                    return;
+                }
+                else if (alreadyUsed) {
+                    DEBUG && console.log(`[Kat's Tweaks] KeyID '${textValue}' already in use!`);
+                    let box = document.getElementById(`${this.id}-${listID}-addItem-text`);
+                    box.classList.add("input-error");
+                    box.setCustomValidity("Key ID is already in use!");
+                    box.reportValidity();
+                    return;
+                }
+                else {
+                    this.pushItem(tagContainer, this.id, listID, database, textValue);
+                }
+            });
+        }
+    }
+
+    drawGroup(itemContainer, moduleID, listID, itemID, itemName, itemTags, itemPriority, itemColor, itemCSS, database, immutable) {
+        jscolor.init();
+        let newItem = this.menuOptionContainer(itemContainer, `${moduleID}-${listID}-itemContainer-${itemID}`);
+
+        if (immutable) {
+            let label = Object.assign(this.menuSpanInLine(newItem), {
+                innerText: `${itemTags[0]}`,
+                id: `${moduleID}-${listID}-tagList-${itemID}`,
+            })
+            label.style.backgroundColor = itemColor;
+            this.createColorPick(newItem, `${moduleID}-${listID}`, `tagList`, itemID, itemColor);
+            return;
+        }
+
+        itemContainer.append(newItem);
+        newItem.append(Object.assign(document.createElement('h4'), {
+            innerText: `${itemName}`,
+            align: 'left',
+            id: `${moduleID}-${listID}-itemKeyID-${itemID}`,
+        }));
+
+        // Priority
+        newItem.append(Object.assign(this.menuSpanInLine(newItem), {
+            innerText: `Priority: `,
+        }));
+        this.createNumberBox(newItem, `${moduleID}-${listID}`, 'priority', itemID, itemPriority)
+        newItem.append(document.createElement('br'));
+        
+        // Create Color Picker
+        newItem.append(Object.assign(this.menuSpanInLine(newItem), {
+            innerText: `Color: `,
+        }));
+        this.createColorPick(newItem, `${moduleID}-${listID}`, `tagList`, itemID, itemColor);
+
+        // Tag List
+        let tagListContainer = Object.assign(document.createElement('p'), {
+            id: `${moduleID}-${listID}-tagList-${itemID}`,
+        });
+        tagListContainer.style.backgroundColor = itemColor;
+        newItem.append(tagListContainer);
+        itemTags.forEach(tag => {
+            let randID = Math.floor(Math.random() * 1000000);
+            DEBUG && console.log(`[Kat's Tweaks] ID ${randID} given to '${tag}' for ${itemID}`)
+            this.drawItem(tagListContainer, moduleID, listID, itemID, itemTags, tag, randID, immutable);
+        });
+        
+        // Add Tag to List
+        newItem.append(Object.assign(document.createElement('input'), {
+            type: 'text',
+            id: `${moduleID}-${listID}-addItemTag-${itemID}-text`,
+            value: ""
+        }));
+        newItem.append(Object.assign(document.createElement('input'), {
+            type: 'button',
+            id: `${moduleID}-${listID}-addItemTag-${itemID}`,
+            value: 'Add Tag',
+        }));
+        document.getElementById(`${moduleID}-${listID}-addItemTag-${itemID}`).addEventListener("click", () => {
+            let textValue = document.getElementById(`${moduleID}-${listID}-addItemTag-${itemID}-text`).value;
+            let randID = Math.floor(Math.random() * 1000000);
+            itemTags.push(`${textValue}`);
+            DEBUG && console.log(`[Kat's Tweaks] Item ${itemID} Tag Add ${textValue} | New Tag List: `, itemTags);
+            DEBUG && console.log(`[Kat's Tweaks] ID ${randID} given to '${textValue}' for ${itemID}`);
+            this.drawItem(tagListContainer, moduleID, listID, itemID, itemTags, textValue, randID);
+        });
+        
+        // Remove Database Item
+        this.createRemoveItem(newItem, `${moduleID}-${listID}`, 'itemContainer', itemID, database, 'Remove Group')
+
+        // Rename Label
+        newItem.append(Object.assign(document.createElement('input'), {
+            type: 'button',
+            id: `${moduleID}-${listID}-renameTag-${itemID}`,
+            value: 'Rename Group',
+        }));
+        document.getElementById(`${moduleID}-${listID}-renameTag-${itemID}`).addEventListener("click", () => {
+            database.forEach(({keyID}, index, array) => {
+                if (keyID == itemID) {
+                    let newName = prompt(`[Kat's Tweaks] Renaming ${itemName} (${itemID})\nEnter New Name:`) || itemName;
+                    array[index].keyName = newName;
+                    document.getElementById(`${moduleID}-${listID}-itemKeyID-${itemID}`).innerText = newName;
+                }
+            });
+        });
+
+        newItem.append(document.createElement('hr'));
+    }
+
+    drawItem(container, moduleID, listID, itemID, itemTags, tag, randID, immutable) {
+        let tagLabel = Object.assign(this.menuSpanInLine(container), {
+            innerText: `${tag}`,
+            id: `${moduleID}-${listID}-tagLabel-${itemID}-${randID}`,
+        });
+        container.append(tagLabel);
+
+        if (!immutable) {
+            tagLabel.append(Object.assign(document.createElement('input'), {
+                type: 'button',
+                id: `${moduleID}-${listID}-removeItem-${itemID}-${randID}`,
+                className: 'removeItemTag',
+                value: 'X',
+            }));
+            document.querySelectorAll(`#${moduleID}-${listID}-removeItem-${itemID}-${randID}`).forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll(`#${moduleID}-${listID}-tagLabel-${itemID}-${randID}`).forEach(function() {
+                        document.getElementById(`${moduleID}-${listID}-tagLabel-${itemID}-${randID}`).remove();
+                    });
+                    document.querySelectorAll(`#${moduleID}-${listID}-removeItem-${itemID}-${randID}`).forEach(function() {
+                        document.getElementById(`${moduleID}-${listID}-removeItem-${itemID}-${randID}`).remove();
+                    });
+                    let foundTag = false;
+                    itemTags.forEach((arrTag, index, array) => {
+                        if ((arrTag == tag) && (!foundTag)) {
+                            array.splice(index, 1);
+                            DEBUG && console.log(`[Kat's Tweaks] Item ${itemID} Tag Remove ${tag} | New Tag List: `, itemTags);
+                            foundTag = true;
+                        }
+                    });
+                })
+            });
+        }
+    }
+
+    pushItem(container, moduleID, listID, database, keyID) {
+        database.push({
+            keyID: `${keyID}`,
+            keyName: 'New Tag Color Group',
+            priority: 0,
+            tagNames: ['No Tag Set'],
+            color: '#80808080',
+            css: `background-color: #80808080 !important;`,
+        });
+        this.drawGroup(container, moduleID, listID, keyID, 'New Tag Color Group', ['No Tag Set'], 0, '#80808080', `background-color: #80808080 !important;`, database);
+        DEBUG && console.log(`[Kat's Tweaks] Created ${keyID} | Database Items: `, database);
+    }
+
+    saveSettings() {
+        let confirmed = confirm('Sure you want to save these settings?');
+
+        // Databases
+        this.settings.databaseWarn.forEach(({keyID}, index, array) => {
+            array[index].color = document.getElementById(`${this.id}-WARN-colorPick-${keyID}`).jscolor.toHEXAString();
+        });
+        this.settings.databaseShip.forEach(({keyID}, index, array) => {
+            array[index].priority = document.getElementById(`${this.id}-SHIP-priority-${keyID}`).value;
+            array[index].color = document.getElementById(`${this.id}-SHIP-colorPick-${keyID}`).jscolor.toHEXAString();
+        });
+        this.settings.databaseChar.forEach(({keyID}, index, array) => {
+            array[index].priority = document.getElementById(`${this.id}-CHAR-priority-${keyID}`).value;
+            array[index].color = document.getElementById(`${this.id}-CHAR-colorPick-${keyID}`).jscolor.toHEXAString();
+        });
+        this.settings.databaseFree.forEach(({keyID}, index, array) => {
+            array[index].priority = document.getElementById(`${this.id}-FREE-priority-${keyID}`).value;
+            array[index].color = document.getElementById(`${this.id}-FREE-colorPick-${keyID}`).jscolor.toHEXAString();
+        });
+
+        if (confirmed) {
+            LOADED_SETTINGS.tagColor = this.settings;
+            localStorage.setItem('KT-SavedSettings', JSON.stringify(LOADED_SETTINGS));
+            DEBUG && console.log(`[Kat's Tweaks] Settings Saved:`, LOADED_SETTINGS);
+            window.location.reload();
+        }
+    }
+
+    moduleSettingValidation() {
+        const setDefault = DEFAULT_SETTINGS.tagColor;
+        const setLoaded = LOADED_SETTINGS.tagColor;
+        let settings = setLoaded || setDefault;
+
+        // Databases
+        try { settings.databaseWarn = setLoaded.databaseWarn; }
+        catch { settings.databaseWarn = setDefault.databaseWarn; }
+        try { settings.databaseShip = setLoaded.databaseShip; }
+        catch { settings.databaseShip = setDefault.databaseShip; }
+        try { settings.databaseChar = setLoaded.databaseChar; }
+        catch { settings.databaseChar = setDefault.databaseChar; }
+        try { settings.databaseFree = setLoaded.databaseFree; }
+        catch { settings.databaseFree = setDefault.databaseFree; }
 
         return settings;
     }
@@ -1126,71 +1574,8 @@ class Main {
     }
 
     initStyles() {
-        StyleManager.addStyle('SETM Default Style', `
-#header .KT-SETM-menu-header {
-    text-align: center !important;
-    font-weight: bold;
-}
-#KT-SETM-optionsbox {
-    position: fixed;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    height: min-content;
-    width: 70%;
-    max-height: 90%;
-    max-width: 800px;
-    margin: auto;
-    overflow-y: auto;
-    border: 10px solid #990000;
-    box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, .2);
-    padding: 0 20px;
-    background-color: rgb(255, 255, 255);
-    z-index: 999;
-}
-#KT-SETM-optionsbox hr.big-hr {
-    border: 0;
-    height: 1px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #990000, rgba(0, 0, 0, 0));
-}
-#KT-SETM-optionsbox p.actions {
-    text-align: right
-}
-#KT-SETM-optionsbox p input[type="button"] {
-    float: none;
-    text-align: right;
-}
-
-#KT-SETM-optionsbox h1,
-#KT-SETM-optionsbox h2 {
-    text-align: center;
-}
-#KT-SETM-optionsbox input[type="button"] {
-    height: auto;
-    cursor: pointer;
-}
-#KT-SETM-optionsbox .optionlabel {
-    display: inline-block;
-    min-width: 13.5em;
-}
-.input-error{
-    outline: 1px solid #990000 !important;
-}
-        `);
-
-        StyleManager.addStyle('SETM Reversi Overrides', `
-.KT-reversi #KT-SETM-optionsbox {
-    border: 10px solid #5998D6;
-    background-color: rgb(51, 51, 51);
-}
-.KT-reversi #KT-SETM-optionsbox hr.big-hr {
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #5998D6, rgba(0, 0, 0, 0));
-}
-.KT-reversi .input-error  {
-    outline: 1px solid #5998D6 !important;
-}
-        `)
+        StyleManager.addStyle('SETM Default Style', `#header .KT-SETM-menu-header { text-align: center !important; font-weight: bold; } #KT-SETM-optionsbox { position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; height: min-content; width: 70%; max-height: 90%; max-width: 800px; margin: auto; overflow-y: auto; border: 10px solid #990000; box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, .2); padding: 0 20px; background-color: rgb(255, 255, 255); z-index: 999; } #KT-SETM-optionsbox hr.big-hr { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #990000, rgba(0, 0, 0, 0)); } #KT-SETM-optionsbox p.actions { text-align: right } #KT-SETM-optionsbox p input[type="button"] { float: none; text-align: right; } #KT-SETM-optionsbox h1, #KT-SETM-optionsbox h2 { text-align: center; } #KT-SETM-optionsbox input[type="button"] { height: auto; cursor: pointer; } #KT-SETM-optionsbox .optionlabel { display: inline-block; min-width: 13.5em; } .input-error{ outline: 1px solid #990000 !important; }`);
+        StyleManager.addStyle('SETM Reversi Overrides', `.KT-reversi #KT-SETM-optionsbox { border: 10px solid #5998D6; background-color: rgb(51, 51, 51); } .KT-reversi #KT-SETM-optionsbox hr.big-hr { background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #5998D6, rgba(0, 0, 0, 0)); } .KT-reversi .input-error  { outline: 1px solid #5998D6 !important; }`)
     }
 }
 

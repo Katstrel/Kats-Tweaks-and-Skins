@@ -2,7 +2,7 @@
 // @name         [AO3] Kat's Tweaks: Tag Colors
 // @author       Katstrel
 // @description  Allows for color coding tags.
-// @version      0.1.1
+// @version      1.0.0
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -23,44 +23,49 @@ let SETTINGS = {
         databaseWarn: [
             {
                 keyID: "no-warn",
+                keyName: 'No Warnings',
                 priority: 0,
-                tagName: ["No Archive Warnings Apply"],
+                tagNames: ["No Archive Warnings Apply"],
                 color: '#80ff8080',
                 css: `background-color: #80ff8080 !important;`,
             },
             {
-                keyID: "choose-not",
+                keyID: "chose-not",
+                keyName: 'Chose Not To Use Warnings',
                 priority: 0,
-
-                tagName: ["Chose Not To Use"],
+                tagNames: ["Chose Not To Use"],
                 color: '#ffff8080',
                 css: `background-color: #ffff8080 !important;`,
             },
             {
                 keyID: "violence",
+                keyName: 'Graphic Violence',
                 priority: 0,
-                tagName: ["Violence"],
+                tagNames: ["Violence"],
                 color: '#ff808080',
                 css: `background-color: #ff808080 !important;`,
             },
             {
                 keyID: "mcd",
+                keyName: 'Major Character Death',
                 priority: 0,
-                tagName: ["Death"],
+                tagNames: ["Death"],
                 color: '#ff80ff80',
                 css: `background-color: #ff80ff80 !important;`,
             },
             {
                 keyID: "noncon",
+                keyName: 'Non-Con',
                 priority: 0,
-                tagName: ["Non-Con"],
+                tagNames: ["Non-Con"],
                 color: '#8080ff80',
                 css: `background-color: #8080ff80 !important;`,
             },
             {
                 keyID: "underage",
+                keyName: 'Underage',
                 priority: 0,
-                tagName: ["Underage"],
+                tagNames: ["Underage"],
                 color: '#80ffff80',
                 css: `background-color: #80ffff80 !important;`,
             },
@@ -68,8 +73,9 @@ let SETTINGS = {
         databaseShip: [
             {
                 keyID: "example",
+                keyName: 'Example',
                 priority: 0,
-                tagName: ['Example & Example'],
+                tagNames: ['Example & Example'],
                 color: '#80808080',
                 css: `background-color: #80808080 !important;`,
             },
@@ -77,8 +83,9 @@ let SETTINGS = {
         databaseChar: [
             {
                 keyID: "example",
+                keyName: 'Example',
                 priority: 0,
-                tagName: ['Example Character'],
+                tagNames: ['Example Character'],
                 color: '#80808080',
                 css: `background-color: #80808080 !important;`,
             },
@@ -86,8 +93,9 @@ let SETTINGS = {
         databaseFree: [
             {
                 keyID: "example",
+                keyName: 'Example',
                 priority: 0,
-                tagName: ['Example Tag'],
+                tagNames: ['Example Tag'],
                 color: '#80808080',
                 css: `background-color: #80808080 !important;`,
             },
@@ -127,16 +135,16 @@ class TagColors {
         let tags = blurb.querySelectorAll(query);
         DEBUG && console.log(`[Kat's Tweaks] Tags found: `, tags);
         tags.forEach(tag => {
-            database.forEach(({keyID, tagName, color}) => {
+            database.forEach(({keyID, tagNames}) => {
                 let tagIncluded = false;
-                tagName.forEach((tagText) => {
+                tagNames.forEach((tagText) => {
                     if (tag.innerText.includes(tagText)) {
                         tagIncluded = true;
                     }
                 });
                 if (tagIncluded) {
                     tag.classList.add(`${this.id}-${tagType}-${keyID}`);
-                    DEBUG && console.log(`[Kat's Tweaks] Tag ${tagName} set to ${keyID}`);
+                    DEBUG && console.log(`[Kat's Tweaks] Tag ${tagNames} set to ${keyID}`);
                 }
             });
         });
