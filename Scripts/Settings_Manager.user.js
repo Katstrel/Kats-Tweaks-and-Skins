@@ -10,8 +10,8 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.2/jscolor.min.js
 // @grant        none
-// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/dev/Scripts/Settings_Manager.user.js
-// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/dev/Scripts/Settings_Manager.user.js
+// @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Settings_Manager.user.js
+// @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Settings_Manager.user.js
 // ==/UserScript==
 "use strict";
 let DEBUG = true;
