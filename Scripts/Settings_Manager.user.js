@@ -2,7 +2,7 @@
 // @name         [AO3] Kat's Tweaks: Settings Manager
 // @author       Katstrel
 // @description  Controls the storage and modification of various settings for all Kat's Tweaks scripts.
-// @version      1.2.0
+// @version      1.2.1
 // @history      1.2.0 - added settings for Tag Colors module
 // @history      1.1.0 - added settings for Bookmarking module
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
@@ -245,41 +245,31 @@ let DEFAULT_SETTINGS = {
     }
 };
 
-class SettingsManager {
+class SettingsModule {
     constructor() {
         console.info(`[Kat's Tweaks] Initializing Settings Manager:`, LOADED_SETTINGS);
         this.dropMenu = this.createHeader();
         this.dropMenu.append(
             this.getMenuButton(`— Welcome to Kat's Tweaks —`),
-            this.getMenuButton('Main Settings | Import/Export', this.manageSettings),
+            this.getMenuButton('Main Settings | Import/Export', function () {
+                new SettingsManager(SettingsModule.createContainer());
+            }),
             this.getMenuButton('Report Issue/Request Feature', function () {
                 window.open("https://github.com/Katstrel/Kats-Tweaks-and-Skins/issues/new", '_blank').focus();
             }),
+
+            // Functional Modules
             this.getMenuButton('— Tweaks Modules —'),
-            this.getMenuButton('Bookmarking', this.initBookmarking),
-            this.getMenuButton('Read Time & Word Count', this.initReadTime),
-            this.getMenuButton('Tag Color', this.initTagColor),
+            this.getMenuButton('Bookmarking', function () {
+                new SettingsBookmarking(SettingsModule.createContainer());
+            }),
+            this.getMenuButton('Read Time & Word Count', function () {
+                new SettingsReadTime(SettingsModule.createContainer());
+            }),
+            this.getMenuButton('Tag Color', function () {
+                new SettingsTagColor(SettingsModule.createContainer());
+            }),
         );
-    }
-
-    manageSettings() {
-        let container = StyleManager.SETM_SettingsContainer();
-        new SettingsMain(container);
-    }
-
-    initReadTime() {
-        let container = StyleManager.SETM_SettingsContainer();
-        new SettingsReadTime(container);
-    }
-
-    initBookmarking() {
-        let container = StyleManager.SETM_SettingsContainer();
-        new SettingsBookmarking(container);
-    }
-
-    initTagColor() {
-        let container = StyleManager.SETM_SettingsContainer();
-        new SettingsTagColor(container);
     }
 
     getMenuButton(text, func) {
@@ -287,7 +277,6 @@ class SettingsManager {
         let label = document.createElement('a');
         button.append(label);
 
-        //button.className = 'menu dropdown-menu';
         label.textContent = text;
 
         if (func) {
@@ -316,6 +305,23 @@ class SettingsManager {
         drop.className = 'menu dropdown-menu';
         
         return drop;
+    }
+
+    static createContainer() {
+        let background = document.createElement('div');
+        background.id = 'KT-SETM-optionsbackground';
+        background.style.background = 'rgba(0, 0, 0, 0.75)';
+        background.style.position = 'fixed';
+        background.style.width = '100%';
+        background.style.height = '100%';
+
+        let box = document.createElement('div');
+        box.id = 'KT-SETM-optionsbox';
+
+        document.body.append(background);
+        document.querySelector('#main').append(box);
+        
+        return box;
     }
 }
 
@@ -484,7 +490,7 @@ class SettingsMenu {
 
 }
 
-class SettingsMain extends SettingsMenu {
+class SettingsManager extends SettingsMenu {
     constructor(container) {
         super();
         this.id = "KT-SETM";
@@ -1513,23 +1519,6 @@ class StyleManager {
             });
         });
     }
-
-    static SETM_SettingsContainer() {
-        let background = document.createElement('div');
-        background.id = 'KT-SETM-optionsbackground';
-        background.style.background = 'rgba(0, 0, 0, 0.75)';
-        background.style.position = 'fixed';
-        background.style.width = '100%';
-        background.style.height = '100%';
-
-        let box = document.createElement('div');
-        box.id = 'KT-SETM-optionsbox';
-
-        document.body.append(background);
-        document.querySelector('#main').append(box);
-        
-        return box;
-    }
 }
 
 class Main {
@@ -1537,7 +1526,7 @@ class Main {
         this.settings = this.loadSettings();
         this.reversiCheck();
         this.initStyles();
-        new SettingsManager();
+        new SettingsModule();
     }
 
     reversiCheck() {
