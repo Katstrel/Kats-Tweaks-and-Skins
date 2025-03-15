@@ -2,11 +2,10 @@
 // @name         [AO3] Kat's Tweaks: Tag Colors
 // @author       Katstrel
 // @description  Allows for color coding tags.
-// @version      1.0.0
+// @version      1.1
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
-// @require      https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.2/jscolor.min.js
 // @grant        none
 // @updateURL    https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Tag_Colors.user.js
 // @downloadURL  https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Tag_Colors.user.js
@@ -121,6 +120,9 @@ class TagColors {
             this.blurbTags(blurb, 'CHAR', this.settings.databaseChar, 'dd.character a.tag, ul.tags li.characters a');
             this.blurbTags(blurb, 'FREE', this.settings.databaseFree, 'dd.freeform a.tag, ul.tags li.freeforms a');
 
+            this.hiddenTags(blurb, 'WARN', this.settings.databaseWarn, 'warning');
+            this.hiddenTags(blurb, 'FREE', this.settings.databaseFree, 'freeform');
+
         });
 
         // Add styling to tags
@@ -129,6 +131,22 @@ class TagColors {
         this.styleTags('CHAR', this.settings.databaseChar, this.settings.cssMode);
         this.styleTags('FREE', this.settings.databaseFree, this.settings.cssMode);
 
+    }
+
+    hiddenTags(blurb, listID, database, tagClass) {
+        let hidden = false;
+        let tag = blurb.querySelector(`li.${tagClass}s a`);
+        if ((tag.innerText == 'Show warnings') || (tag.innerText == 'Show additional tags')) {
+            hidden = true;
+        }
+
+        if (hidden) {
+            tag.addEventListener('click', async (event) => {
+                event.preventDefault();
+                await new Promise(res => setTimeout(res, 250));
+                this.blurbTags(blurb, listID, database, `dd.${tagClass} a.tag, ul.tags li.${tagClass}s a`)
+            });
+        }
     }
 
     blurbTags(blurb, tagType, database, query) {
@@ -154,10 +172,10 @@ class TagColors {
         database.sort((a,b) => a.priority - b.priority);
         database.forEach(({keyID, color, css}) => {
             if (useCSS) {
-                StyleManager.addStyle(`ADVANCED ${tagType}-${keyID}`, `.${this.id}-${tagType}-${keyID} { ${css} }`)
+                StyleManager.addStyle(`ADVANCED ${tagType}-${keyID}`, `.${this.id}-${tagType}-${keyID} { ${css} }`);
             }
             else {
-                StyleManager.addStyle(`SIMPLE ${tagType}-${keyID}`, `.${this.id}-${tagType}-${keyID} { background-color: ${color} !important; }`)
+                StyleManager.addStyle(`SIMPLE ${tagType}-${keyID}`, `.${this.id}-${tagType}-${keyID} { background-color: ${color} !important; }`);
             }
         });
     }
