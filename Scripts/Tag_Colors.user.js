@@ -2,7 +2,7 @@
 // @name         [AO3] Kat's Tweaks: Tag Colors
 // @author       Katstrel
 // @description  Allows for color coding tags.
-// @version      1.1
+// @version      1.1.1
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -136,6 +136,7 @@ class TagColors {
     hiddenTags(blurb, listID, database, tagClass) {
         let hidden = false;
         let tag = blurb.querySelector(`li.${tagClass}s a`);
+        if (!tag) { return; }
         if ((tag.innerText == 'Show warnings') || (tag.innerText == 'Show additional tags')) {
             hidden = true;
         }
