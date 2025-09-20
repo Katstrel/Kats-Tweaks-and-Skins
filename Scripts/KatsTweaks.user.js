@@ -2,7 +2,7 @@
 // @name         [AO3] Kat's Tweaks
 // @author       Katstrel
 // @description  A suite of AO3 enhancements and tweaks.
-// @version      0.1.0
+// @version      0.2.0
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -90,15 +90,19 @@ const DEFAULT_SETTINGS = {
     
     ReadTime: {
         enabled: true,
-
-        // Reading speed in words per minute. Default: 200
         wordsPerMinute: 200,
+        color: true,
+
+        // Time format within the stat block.
+        /*   Valid values: 'Minutes', 'Hours Minutes', 'Days Hours Minutes',
+            'Hours Float', and 'Days Float' */
+        timeFormat: 'Days Hours Minutes',        
 
         // Controls the coloring of read times
         colorSettings: [
             {
                 // ID must contain no spaces
-                functionID: "Level_0",
+                functionID: "Default",
                 // name is unimportant except when using the setting GUI
                 settingName: "Default",
                 // color applies when the read time is over this value in minutes
@@ -107,22 +111,28 @@ const DEFAULT_SETTINGS = {
                 color: '#80ff8080',
             },
             {
-                functionID: "Level_1",
+                functionID: "Option1",
                 settingName: "1 Hour",
                 minutesThreshold: 60,
                 color: '#ffff8080',
             },
             {
-                functionID: "Level_2",
+                functionID: "Option2",
                 settingName: "3 Hours",
                 minutesThreshold: 180,
                 color: '#ff808080',
             },
             {
-                functionID: "Level_3",
+                functionID: "Option3",
+                settingName: "12 Hours",
+                minutesThreshold: 720,
+                color: '#ff80ff80',
+            },
+            {
+                functionID: "Option4",
                 settingName: "24 Hours",
                 minutesThreshold: 1440,
-                color: '#ff80ff80',
+                color: '#8080ff80',
             },
         ],
     },
@@ -159,6 +169,7 @@ const LOGNAME = `[Kat's Tweaks]`; // Log prefix
 const KEYCHAIN = `KATS`; // Localstorage prefix
 const ELEMENTID = `KTweak`; // HTML Element ID
 const DEBUG = true; // MOAR LOGS
+const REVERSI = window.getComputedStyle(document.body).backgroundColor === 'rgb(51, 51, 51)';
 
 // Captures the username or uses NA as a guest
 const USERNAME = document.querySelector('ul.menu.dropdown-menu')?.previousElementSibling?.getAttribute('href')?.split('/').pop() ?? 'NA';
@@ -209,6 +220,9 @@ class Tracking {
         
         this.workID = this.collect.getID(this.pageType, this.blurb);
 
+        ManageStyle.addStyle('Bookmarked', `.${this.elementID}-Bookmarked { border-right: 50px solid ${REVERSI ? '#555' : '#ddd'} !important; } @media screen and (max-width: 62em) { .${this.elementID}-Bookmarked { border-right: 20px solid ${REVERSI ? '#555' : '#ddd'} !important;  }`);
+        ManageStyle.addStyle('Checked', `.${this.elementID}-Checked { border-left: 5px solid ${REVERSI ? '#5998d6' : '#900'} !important; }`);
+
         // ─── Blurb Lists ─────────────────────────────────────────────
 
 
@@ -217,37 +231,10 @@ class Tracking {
             DEBUG && console.info(`${LOGNAME} Blurb for work ${this.workID} found in list!`)
             this.editButton = this.blurb.querySelector(`#bookmark_form_trigger_for_${this.workID}`);
 
-            if (!this.editButton) { return; }
-            DEBUG && console.log(`${LOGNAME} Found bookmark Edit button for ${this.workID}`);
+            this.listCheckStatus(this.workID);
 
-            this.editButton.addEventListener('click', async(event) => {
-                event.preventDefault();
-
-                let form = this.blurb.querySelector('#bookmark-form');
-                while (!form) {
-                    DEBUG && console.log(`${LOGNAME} Waiting .25s`);
-                    await new Promise(res => setTimeout(res, 250));
-                    form = this.blurb.querySelector('#bookmark-form');
-                }
-
-                DEBUG && console.log(`${LOGNAME} Found bookmark form`);
-                this.elementNotes = this.blurb.querySelector(`#bookmark_notes_${this.workID}`);
-                this.elementTags = this.blurb.querySelector('#bookmark_tag_string_autocomplete');
-
-                this.notes = this.collect.getBookmarkNotes(this.pageType, this.blurb);
-                this.tags = this.collect.getBookmarkTagsAndCollections(this.pageType, 1, this.blurb);
-                this.summary = this.collect.getSummary(this.pageType, this.blurb);
-                
-                DEBUG && console.log(`${LOGNAME} Initialized Tracking module with data:`);
-                DEBUG && console.table({
-                    workID: this.collect.getID(this.pageType, this.blurb),
-                    notes: this.notes,
-                    tags: this.tags,
-                });
-
-                this.statusTags(this.blurb, this.collect.getWordCount(this.pageType, this.blurb));
-                this.updateSummary(this.blurb, `#bookmark_notes_${this.workID}`);
-            });
+            // Edit Button & Bookmark Form
+            if (this.editButton) { this.listEditForm(); }
         }
 
 
@@ -315,6 +302,63 @@ class Tracking {
         this.statusMarkLater('Marked For Later');
         this.statusSubscribed('Subscribed');
     }
+    
+
+    // ─── List Functions ──────────────────────────────────────────────────
+
+    
+
+    listCheckStatus(storageID) {
+        DEBUG && console.log(`${LOGNAME} Checking status of blurb ${storageID}`)
+        let bookmarkBy = this.blurb.querySelector("h5.byline.heading a")?.innerText ?? "";
+        
+        if (bookmarkBy === USERNAME) {
+            this.storage.arrayAdd(`${this.keychain}-Bookmarked`, storageID);
+            this.blurb.classList.add(`${this.elementID}-Bookmarked`);
+            return;
+        }
+
+        let isBookmarked = this.storage.arrayGet(`${this.keychain}-Bookmarked`).includes(storageID);
+        let isChecked = this.storage.arrayGet(`${this.keychain}-Checked`).includes(storageID);
+        if (!isBookmarked && !isChecked) {
+            this.storage.arrayAdd(`${this.keychain}-Checked`, storageID);
+            this.blurb.classList.add(`${this.elementID}-Checked`);
+        } else if (isBookmarked) {
+            this.storage.arrayRemove(`${this.keychain}-Checked`, storageID);
+            this.blurb.classList.add(`${this.elementID}-Bookmarked`);
+        }
+    }
+
+    listEditForm() {
+        DEBUG && console.log(`${LOGNAME} Found bookmark Edit button for ${this.workID}`);
+
+        this.editButton.addEventListener('click', async(event) => {
+            event.preventDefault();
+            let form = this.blurb.querySelector('#bookmark-form');
+            while (!form) {
+                DEBUG && console.log(`${LOGNAME} Waiting .25s`);
+                await new Promise(res => setTimeout(res, 250));
+                form = this.blurb.querySelector('#bookmark-form');
+            }
+
+            DEBUG && console.log(`${LOGNAME} Found bookmark form`);
+            this.elementNotes = this.blurb.querySelector(`#bookmark_notes_${this.workID}`);
+            this.elementTags = this.blurb.querySelector('#bookmark_tag_string_autocomplete');
+            this.notes = this.collect.getBookmarkNotes(this.pageType, this.blurb);
+            this.tags = this.collect.getBookmarkTagsAndCollections(this.pageType, 1, this.blurb);
+            this.summary = this.collect.getSummary(this.pageType, this.blurb);
+            
+            DEBUG && console.log(`${LOGNAME} Initialized Tracking module with data:`);
+            DEBUG && console.table({
+                workID: this.collect.getID(this.pageType, this.blurb),
+                notes: this.notes,
+                tags: this.tags,
+            });
+
+            this.statusTags(this.blurb, this.collect.getWordCount(this.pageType, this.blurb));
+            this.updateSummary(this.blurb, `#bookmark_notes_${this.workID}`);
+        });
+    }
 
 
     // ─── Check And Request Bookmark ──────────────────────────────────────
@@ -328,6 +372,7 @@ class Tracking {
     
             this.storage.arrayAdd(`${this.keychain}-Bookmarked`, this.storageID);
             this.storage.arrayRemove(`${this.keychain}-Checked`, this.storageID);            
+            this.blurb.classList.add(`${this.elementID}-Bookmarked`);
         } else {
             DEBUG && console.log(`${LOGNAME} Not bookmarked! WorkID: ${this.workID} | BookmarkID: ${this.bookmarkID}`);
             
@@ -589,6 +634,7 @@ class Tracking {
             });
         });
     }
+
 }
 
 
@@ -601,6 +647,92 @@ class Tracking {
 
 class ReadTime {
 
+    constructor() {
+        DEBUG && console.info(`${LOGNAME} Initilizing Read Time module!`)
+        this.collect = new DataCollector();
+        this.settings = LOADED_SETTINGS.ReadTime;
+        this.elementID = `${KEYCHAIN}-Read`;
+
+        // Run on all blurbs
+        document.querySelectorAll('li.work.blurb, li.bookmark.blurb, dl.work.meta, dl.series.meta, li.series.blurb').forEach(blurb=> {
+            if (blurb.querySelector('p.message')) { return; }
+            const workWord = this.collect.getWordCount('LIST', blurb);
+            const workTime = workWord/this.settings.wordsPerMinute;
+            const stat = this.addStat('Read Time:', this.calculateTime(workTime), 'workTime', this.getColor(workTime));
+            blurb.querySelector('dl.stats dd.words').after(stat[0], stat[1]);
+        });
+
+        // If on a chapter work, include chapter word count and read time
+        if (document.querySelector(`dl.work.meta dl.stats dd.chapters`)) {
+            this.chapterWCTime();
+        }
+    }
+
+    chapterWCTime() {
+        let chapCount = this.collect.getChapterCount('WORK', document.querySelector('dl.work.meta.group'));
+        if (window.location.pathname.toLowerCase().includes(`chapters`) && chapCount > 1) {
+            const chapWord = this.collect.getChapterWordCount('WORK');
+            const formatCount = new Intl.NumberFormat({ style: `decimal` }).format(chapWord);
+            const statWC = this.addStat('Words in Chapter:', formatCount, 'chapterWords');
+            document.querySelector('dl.stats dd.chapters').after(statWC[0], statWC[1]);
+            
+            const chapTime = chapWord/this.settings.wordsPerMinute;
+            const stat = this.addStat('Read Time:', this.calculateTime(chapTime), 'chapterTime', this.getColor(chapTime));
+            document.querySelector(`dl.stats dd.${ELEMENTID}-chapterWords`).after(stat[0], stat[1]);
+        }
+    }
+
+    calculateTime(minutes, format = this.settings.timeFormat) {
+        const days = Math.floor(minutes/1440);
+        const hours = Math.floor(minutes/60);
+
+        const dayFloat = (minutes/1440).toFixed(2);
+        const hourFloat = (minutes/60).toFixed(2);
+
+        const hourMins = (minutes%60).toFixed(0);
+        const dayHours = ((minutes%1440)/60).toFixed(0)
+        const dayMins = ((minutes%1440)%60).toFixed(0);
+
+        switch(format) {
+            case 'Minutes':
+                return `${minutes}m`;
+            case 'Hours Minutes':
+                return `${hours > 0 ? `${hours}h` : ''}${hourMins > 0 ? `${hourMins}m` : ''}`;
+            case 'Days Hours Minutes':
+                return `${days > 0 ? `${days}d` : ''}${dayHours > 0 ? `${dayHours}h` : ''}${dayMins > 0 ? `${dayMins}m` : ''}`;
+            case 'Hours Float':
+                return `${hourFloat}h`;
+            case 'Days Float':
+                return `${hourFloat}h`;
+        }
+    }
+
+    addStat(term, definition, classID, color) {
+        let descListTerm = Object.assign(document.createElement(`dt`), {
+            id: `${this.elementID}`,
+            className: `${ELEMENTID}-${classID}`,
+            textContent: term || "",
+        });
+        let descListDefine = Object.assign(document.createElement(`dd`), {
+            id: `${this.elementID}`,
+            className: `${ELEMENTID}-${classID}`,
+            textContent: definition || ""
+        });
+
+        if (color) { descListDefine.style.backgroundColor = color; }
+
+        return [descListTerm, descListDefine];
+    }
+
+    getColor(minutes) {
+        let filteredOptions = this.settings.colorSettings.filter((option) => {
+            return option.minutesThreshold <= minutes;
+        });
+        let sorted = filteredOptions.sort(function(a, b){return a.minutesThreshold - b.minutesThreshold});
+        DEBUG && console.log(`[Kat's Tweaks] Sorted list`, sorted);
+
+        return sorted[sorted.length-1].color;
+    }
 }
 
 
@@ -612,7 +744,6 @@ class ReadTime {
 */
 
 class TagColor {
-
 }
 
 
@@ -1139,6 +1270,37 @@ class DataCollector {
 
 
     
+    // Credit: w4tchdoge's AO3: Get Current Chapter Word Count
+    getChapterWordCount(pageType) {
+        switch(pageType) {
+            default:
+                this.defaultCatch(pageType, 'Chapter Word Count');
+                return;
+            case 'WORK':
+        }
+
+        // Get the Chapter Text 
+        const chapter_text = (function () {
+            let elm_parent = document.querySelector(`[role="article"]:has(> #work)`).cloneNode(true);
+            elm_parent.removeChild(elm_parent.querySelector(`#work`));
+            return elm_parent.textContent.trim();
+        })();
+
+        const script_list = [`Arabic`, `Armenian`, `Balinese`, `Bengali`, `Bopomofo`, `Braille`, `Buginese`, `Buhid`, `Canadian_Aboriginal`, `Carian`, `Cham`, `Cherokee`, `Common`, `Coptic`, `Cuneiform`, `Cypriot`, `Cyrillic`, `Deseret`, `Devanagari`, `Ethiopic`, `Georgian`, `Glagolitic`, `Gothic`, `Greek`, `Gujarati`, `Gurmukhi`, `Han`, `Hangul`, `Hanunoo`, `Hebrew`, `Hiragana`, `Inherited`, `Kannada`, `Katakana`, `Kayah_Li`, `Kharoshthi`, `Khmer`, `Lao`, `Latin`, `Lepcha`, `Limbu`, `Linear_B`, `Lycian`, `Lydian`, `Malayalam`, `Mongolian`, `Myanmar`, `New_Tai_Lue`, `Nko`, `Ogham`, `Ol_Chiki`, `Old_Italic`, `Old_Persian`, `Oriya`, `Osmanya`, `Phags_Pa`, `Phoenician`, `Rejang`, `Runic`, `Saurashtra`, `Shavian`, `Sinhala`, `Sundanese`, `Syloti_Nagri`, `Syriac`, `Tagalog`, `Tagbanwa`, `Tai_Le`, `Tamil`, `Telugu`, `Thaana`, `Thai`, `Tibetan`, `Tifinagh`, `Ugaritic`, `Vai`, `Yi`];
+        const script_exclude_list = [`Common`, `Latin`, `Inherited`];
+
+        // Counting the number of words
+        const word_count_regex = new RegExp((function () {
+            const regex_scripts = script_list.filter((elm) => !script_exclude_list.includes(elm)).map((elm) => `\\p{Script=${elm}}`).join(``);
+            const full_regex_str = `[${regex_scripts}]|((?![${regex_scripts}])[\\p{Letter}\\p{Mark}\\p{Number}\\p{Connector_Punctuation}])+`;
+            return full_regex_str;
+        })(), `gv`);
+        const word_count_arr = Array.from(chapter_text.replaceAll(/--/g, `—`).replaceAll(/['’‘-]/g, ``).matchAll(word_count_regex), (m) => m[0]);
+        const word_count_int = word_count_arr.length;
+        DEBUG && console.log(`${LOGNAME} Chapter Word Count: ${word_count_int}`);
+        return word_count_int;
+    }
+    
     // Gets the current time in UTC
     getCurrentTime() {
         const current = new Date();
@@ -1462,6 +1624,24 @@ class ManageStorage {
         }
     }
 
+}
+
+
+
+// ─── Manage Style Settings ───────────────────────────────────────────────────
+
+/*
+
+*/
+
+class ManageStyle {
+    static addStyle(debugID, css) {
+        const style = document.createElement('style');
+        style.id = ELEMENTID;
+        style.innerHTML = css;
+        document.head.appendChild(style);
+        DEBUG && console.info(`${LOGNAME} Style ${debugID} appended.`);
+    }
 }
 
 

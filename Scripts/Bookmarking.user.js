@@ -1157,6 +1157,7 @@ class StyleManager {
         DEBUG && console.info(`[Kat's Tweaks] Custom style '${debugID}' added successfully`);
     }
 }
+
 class Main {
     constructor() {
         this.settings = this.loadSettings();

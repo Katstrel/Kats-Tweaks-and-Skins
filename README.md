@@ -19,3 +19,12 @@ Safari: [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
 | [Bookmarking](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Bookmarking.user.js) | Bookmark tracking, tagging, and more |
 | [Read Time & Word Count](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Read_Time_and_Word_Count.user.js) | Estimated read time for works and chapters |
 | [Tag Colors](https://github.com/Katstrel/Kats-Tweaks-and-Skins/raw/refs/heads/main/Scripts/Tag_Colors.user.js) | Create color coding for tags |
+
+# Credits
+
+Parts of the code are copied or based on the following scripts.
+Huge shoutout to all of these authors as the entire project wouldn't have been possible without them as examples to build off of.
+
+AO3 Bookmarking Records by Bairdel
+AO3: Estimated Reading Time v2 by lomky
+AO3: Get Current Chapter Word Count by w4tchdoge
