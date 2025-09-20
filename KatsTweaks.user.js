@@ -299,7 +299,7 @@ class Tracking {
         // If status is detected, populate and/or create the bookmark
         this.statusCommented('Commented');
         this.statusKudosed('Kudosed');
-        this.statusMarkLater('Marked For Later');
+        this.statusMarkLater('To Read');
         this.statusSubscribed('Subscribed');
     }
     
