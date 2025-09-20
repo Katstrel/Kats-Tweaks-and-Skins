@@ -46,7 +46,7 @@ const DEFAULT_SETTINGS = {
         newBookmarksPrivate: true,
         newBookmarksRec: false,
         showUpdatedBookmarks: true,
-        showAutoBookmarks: false,
+        showAutoBookmarks: true,
 
         bookmarkComments: true,
         bookmarkKudos: true,
@@ -441,7 +441,7 @@ class Tracking {
         }
 
         if (auto) {
-            await new Promise(res => setTimeout(res, LOADED_SETTINGS.timeout));
+            await new Promise(res => setTimeout(res, 500));
             DEBUG && console.log(`${LOGNAME} Requesting bookmark automatically.`);
             DEBUG && console.table({
                 storageID: this.storageID,
