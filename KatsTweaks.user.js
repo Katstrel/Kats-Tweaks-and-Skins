@@ -2,7 +2,7 @@
 // @name         [AO3] Kat's Tweaks
 // @author       Katstrel
 // @description  A suite of AO3 enhancements and tweaks.
-// @version      0.2.1
+// @version      0.2.2
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -187,7 +187,6 @@ const USERNAME = document.querySelector('ul.menu.dropdown-menu')?.previousElemen
     TODO:
     Update Last Read Button - run create notes
     Update Summary Button - change between dividers
-    Wordcount tags
     Check old kudos
 
 */
@@ -551,18 +550,16 @@ class Tracking {
         
         // Tracking Block
         const track = `\n\<details\>\<summary\>${this.header}\</summary\>`;
-        const author = `\nAuthor: ${authorList}`
-        const series = this.isSeries ? '' : `\nSeries: ${seriesList}`
-        const title = `\nTitle: \<a href="https://archiveofourown.org/${this.isSeries ? 'series' : 'works'}/${this.workID}"\>${this.collect.getTitle(this.pageType, this.blurb)}\</a\>`;
+        const author = `Author: ${authorList}`
+        const series = (!this.isSeries && seriesList) ? `Series: ${seriesList}` : ''
+        const title = `Title: \<a href="https://archiveofourown.org/${this.isSeries ? 'series' : 'works'}/${this.workID}"\>${this.collect.getTitle(this.pageType, this.blurb)}\</a\>`;
 
         const summary = this.collect.getBookmarkOldSummary(this.pageType, this.divider, 1);
         
-        // Work vs Series notes
-        if (this.isSeries) {
-            return `${notes}${this.separator}${last}\n${track}${title}${author}\n${this.divider}${summary}${summary.includes(`</details>`) ? "" : `\</details\>`}`;
-        } else {
-            return `${notes}${this.separator}${last}\n${track}${title}${author}${series}\n${this.divider}${summary}${summary.includes(`</details>`) ? "" : `\</details\>`}`;
-        }
+        // Return Notes - This is where the tracking block can be edited in terms of what is displayed.
+        const userBlock = `${title}\n${author}\n${series}`
+
+        return `${notes}${this.separator}${last}\n${track}\n${userBlock}\n${this.divider}${summary}${summary.includes(`</details>`) ? "" : `\</details\>`}`;
     }
 
 
@@ -642,7 +639,12 @@ class Tracking {
 // ─── Read Time Module ────────────────────────────────────────────────────────
 
 /*
-    
+    Want to know how long it takes to read a work? A series? A chapter? This 
+    module does it all! It also includes some customization controlled by the
+    settings. 
+
+    This is by far the smallest as most basic module, but displaying estimated
+    reading times is serious business!
 */
 
 class ReadTime {
