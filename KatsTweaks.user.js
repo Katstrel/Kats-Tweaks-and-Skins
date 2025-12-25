@@ -2,7 +2,7 @@
 // @name         [AO3] Kat's Tweaks
 // @author       Katstrel
 // @description  A suite of AO3 enhancements and tweaks.
-// @version      0.2.0
+// @version      0.2.1
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
 // @include      https://archiveofourown.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org
@@ -689,9 +689,9 @@ class ReadTime {
         const dayFloat = (minutes/1440).toFixed(2);
         const hourFloat = (minutes/60).toFixed(2);
 
-        const hourMins = (minutes%60).toFixed(0);
-        const dayHours = ((minutes%1440)/60).toFixed(0)
-        const dayMins = ((minutes%1440)%60).toFixed(0);
+        const hourMins = Math.floor(minutes%60);
+        const dayHours = Math.floor((minutes%1440)/60);
+        const dayMins = Math.floor((minutes%1440)%60);
 
         switch(format) {
             case 'Minutes':
@@ -703,7 +703,7 @@ class ReadTime {
             case 'Hours Float':
                 return `${hourFloat}h`;
             case 'Days Float':
-                return `${hourFloat}h`;
+                return `${dayFloat}d`;
         }
     }
 
@@ -1041,6 +1041,7 @@ class DataCollector {
             default:
                 this.defaultCatch(pageType, 'Estimated Chapters');
                 break;
+            case 'LIST':
             case 'WORK':
                 let estChapters = blurb.querySelector('dd.chapters').innerText.split('/')[1];
                 return this.convertStringToInteger(estChapters === '?' ? '0' : estChapters);
