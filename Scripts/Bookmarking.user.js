@@ -197,7 +197,7 @@ class Bookmarking {
         }
 
         // Summary Block
-        note += `${this.descrip}\<blockquote\>${this.summary}\</blockquote\>\</details\>`;
+        note += `${this.descrip}${this.summary}${this.summary.includes(`</details>`) ? "" : `\</details\>`}`;
         return note
 
         function unzipArray(array) {
