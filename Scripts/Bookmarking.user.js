@@ -2,7 +2,8 @@
 // @name         [AO3] Kat's Tweaks: Bookmarking
 // @author       Katstrel
 // @description  Bookmark tracking, tagging, and more.
-// @version      1.0.2
+// @version      1.0.3
+// @history      1.0.3 - removed blockquote tags around summary block
 // @history      1.0.2 - fixed list page series blurbs from not displaying bookmark style
 // @history      1.0.1 - disabled comment tag feature and buttons at the top of series pages
 // @namespace    https://github.com/Katstrel/Kats-Tweaks-and-Skins
